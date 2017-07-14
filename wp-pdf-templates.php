@@ -378,6 +378,8 @@ function _print_pdf($html) {
       $dompdf->render();
 
       if(defined('DISABLE_PDF_CACHE') && DISABLE_PDF_CACHE) {
+        //allow plugins/theme to do something with the generated file
+        do_action('pdf_template_file_output', $dompdf->output(), $filename, $cache_id);
         //just stream the PDF to user if caches are disabled
         return $dompdf->stream($filename, array("Attachment" => false));
       }
@@ -387,8 +389,13 @@ function _print_pdf($html) {
         @mkdir(PDF_CACHE_DIRECTORY);
       }
 
+      $output = $dompdf->output();
+
       //save the pdf file to cache
-      file_put_contents($cached, $dompdf->output());
+      file_put_contents($cached, $output);
+
+      //allow plugins/theme to do something with the generated file
+      do_action('pdf_template_file_output', $output, $filename, $cache_id);
     }
 
     //read and display the cached file
